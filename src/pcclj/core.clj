@@ -2,46 +2,50 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.core.match :as m]))
 
-(defn aparser
-  [input]
-  (m/match (first input)
-           \a [true (subs input 1)]
-           :else [false input]))
+(defrecord Parser   [pfn])
+(defrecord PSuccess [chr rst])
+(defrecord PError   [err])
 
-;; ---
-
-
-
-(defn pchar-2
+(defn pchar*
+  "Parses a single character in an input string."
   [chr input]
   (m/match (first input)
-           chr   [true (subs input 0 1) (subs input 1)]
-           :else [false input (str "Expecting " chr ", found " (first input))]))
+           chr   (PSuccess. (conj '() (subs input 0 1)) (subs input 1))
+           :else (PError.   (str "Expecting " chr ", found " (first input)))))
 
 ;; ---
 
 (defn pchar
+  "Curried version of pchar-2"
   [chr]
-  (partial pchar-2 chr))
+  (Parser. (partial pchar* chr)))
+
+(defn run-p
+  [p input]
+  ((:pfn p) input))
 
 ;; ---
 
 (defn and-then
   [p1 p2]
-  (fn [input]
-    (m/match (p1 input)
-             [false _ _]  (p1 input)
-             [true c1 r1] (m/match (p2 r1)
-                                [true  c2 r2] [true (cons c1 c2) (last (p2 r1))]
-                                [false _  r2] [false input r2]))))
+  (Parser.
+    (fn [input]
+      (let [r1 (run-p p1 input)]
+        (condp instance? r1
+          PSuccess (let [r2 (run-p p2 (:rst r1))]
+                     (condp instance? r2
+                       PSuccess (PSuccess. (conj (:chr r2) (:chr r1)) (:rst r2))
+                       PError   r2))
+          PError   r1)))))
 
 (defn or-else
   [p1 p2]
-  (fn [input]
-    (let [r1 (p1 input)]
-      (case (first r1)
-        true  r1
-        false (p2 input)))))
+  (Parser.
+   (fn [input]
+     (let [r1 (run-p p1 input)]
+       (condp instance? r1
+         PSuccess r1
+         PError   (run-p p2 input))))))
 
 (defn choice [parsers] (reduce or-else parsers))
 
@@ -52,16 +56,17 @@
 
 ;; ---
 
-(defn mapP
+(defn map-p
   [f parser]
-  (fn [input]
-    (let [parsed (parser input)]
-      (if (true? (first parsed))
-        [true (f (second parsed)) (last parsed)]
-        [false input (last parsed)]))))
+  (Parser.
+   (fn [input]
+     (let [r (run-p parser input)]
+       (condp instance? r
+         PSuccess (PSuccess. (f (:chr r)) (:rst r))
+         r)))))
 
 ;; ---
 
-(defn returnP
+(defn return-p
   [val]
-  (fn [input] [true val input]))
+  (Parser. (fn [input] (PSuccess. val input))))
