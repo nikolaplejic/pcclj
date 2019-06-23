@@ -76,6 +76,16 @@
   (map-p (fn [[f x & _]] (f x)) (and-then fp p)))
 
 (defn lift2
+  "'Lifts' a two-argument function into a parser.
+
+  This assumes `f` is a two-argument function, and will fail badly if it is not.
+  `x` and `y` are parsers that will be used to parse the arguments to the
+  function.
+
+  E.g. to lift `clojure.string/starts-with?`:
+    `(def starts-with-p (partial lift2 clojure.string/starts-with?))`
+
+  See `cons-p` for example usage."
   [f x y]
   (apply-p
    (apply-p
@@ -87,6 +97,7 @@
 (def cons-p (partial lift2 cons))
 
 (defn sequence-p
+  "Turns a sequence of parsers into a parser."
   [[parser & rst]]
   (if (nil? parser) (return-p [])
     (cons-p parser (sequence-p rst))))
@@ -100,5 +111,6 @@
   (map-p (comp clojure.string/join flatten) parser))
 
 (defn pstring
-  [str]
+  "Turns a string into a parser for that string."
+  [^String str]
   (as-str-p (sequence-p (map pchar (seq str)))))
