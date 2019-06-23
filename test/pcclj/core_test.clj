@@ -73,9 +73,9 @@
         s2 (run-p parser "01a345")
         s3 (run-p int-parser "12345")]
     (is (instance? PSuccess s1))
-    (is (= "0123" (.chr s1)))
+    (is (= "0123" (:res s1)))
     (is (instance? PError s2))
-    (is (= 1234 (.chr s3)))))
+    (is (= 1234 (:res s3)))))
 
 (deftest apply-test
   (let [flatten-p (apply-p (return-p flatten)
@@ -85,9 +85,9 @@
         s1 (run-p flatten-p "abcd")
         s2 (run-p f-reverse-p "abcd")]
     (is (instance? PSuccess s1))
-    (is (= '("a" "b") (.chr s1)))
+    (is (= '("a" "b") (:res s1)))
     (is (instance? PSuccess s2))
-    (is (= '("b" "a") (.chr s2)))))
+    (is (= '("b" "a") (:res s2)))))
 
 (deftest sequence-test
   (let [ps [(pchar \a) (pchar \b) (pchar \c)]

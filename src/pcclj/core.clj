@@ -3,7 +3,7 @@
             [clojure.core.match :as m]))
 
 (defrecord Parser   [pfn])
-(defrecord PSuccess [chr rst])
+(defrecord PSuccess [res rst])
 (defrecord PError   [err])
 
 (defn pchar*
@@ -34,7 +34,7 @@
         (condp instance? r1
           PSuccess (let [r2 (run-p p2 (:rst r1))]
                      (condp instance? r2
-                       PSuccess (PSuccess. (conj '() (:chr r2) (:chr r1)) (:rst r2))
+                       PSuccess (PSuccess. (conj '() (:res r2) (:res r1)) (:rst r2))
                        PError   r2))
           PError   r1)))))
 
@@ -62,7 +62,7 @@
    (fn [input]
      (let [r (run-p parser input)]
        (condp instance? r
-         PSuccess (PSuccess. (f (:chr r)) (:rst r))
+         PSuccess (PSuccess. (f (:res r)) (:rst r))
          r)))))
 
 ;; ---
