@@ -34,7 +34,7 @@
         (condp instance? r1
           PSuccess (let [r2 (run-p p2 (:rst r1))]
                      (condp instance? r2
-                       PSuccess (PSuccess. (conj (:chr r2) (:chr r1)) (:rst r2))
+                       PSuccess (PSuccess. (conj '() (:chr r2) (:chr r1)) (:rst r2))
                        PError   r2))
           PError   r1)))))
 
@@ -70,3 +70,35 @@
 (defn return-p
   [val]
   (Parser. (fn [input] (PSuccess. val input))))
+
+(defn apply-p
+  [fp p]
+  (map-p (fn [[f x & _]] (f x)) (and-then fp p)))
+
+(defn lift2
+  [f x y]
+  (apply-p
+   (apply-p
+    (return-p (fn [arg] (partial f arg))) x)
+   y))
+
+;; ---
+
+(def cons-p (partial lift2 cons))
+
+(defn sequence-p
+  [[parser & rst]]
+  (if (nil? parser) (return-p [])
+    (cons-p parser (sequence-p rst))))
+
+;; ---
+
+(defn as-str-p
+  "A helper function that flattens the result of the parser into a string
+  instead of a sequence"
+  [parser]
+  (map-p (comp clojure.string/join flatten) parser))
+
+(defn pstring
+  [str]
+  (as-str-p (sequence-p (map pchar (seq str)))))

@@ -76,3 +76,29 @@
     (is (= "0123" (.chr s1)))
     (is (instance? PError s2))
     (is (= 1234 (.chr s3)))))
+
+(deftest apply-test
+  (let [flatten-p (apply-p (return-p flatten)
+                           (and-then (pchar \a) (pchar \b)))
+        f-reverse-p (apply-p (return-p (comp flatten reverse))
+                             (and-then (pchar \a) (pchar \b)))
+        s1 (run-p flatten-p "abcd")
+        s2 (run-p f-reverse-p "abcd")]
+    (is (instance? PSuccess s1))
+    (is (= '("a" "b") (.chr s1)))
+    (is (instance? PSuccess s2))
+    (is (= '("b" "a") (.chr s2)))))
+
+(deftest sequence-test
+  (let [ps [(pchar \a) (pchar \b) (pchar \c)]
+        s1 (run-p (sequence-p ps) "abcde")
+        s2 (run-p (sequence-p ps) "edcba")]
+    (is (instance? PSuccess s1))
+    (is (instance? PError s2))))
+
+(deftest pstring-test
+  (let [s "The quick brown fox"
+        t1 (run-p (pstring s) "The quick brown fox jumps over the lazy dog")
+        t2 (run-p (pstring s) "The quick brown dog jumps over the lazy fox")]
+    (is (instance? PSuccess t1))
+    (is (instance? PError t2))))
