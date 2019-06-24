@@ -102,3 +102,15 @@
         t2 (run-p (pstring s) "The quick brown dog jumps over the lazy fox")]
     (is (instance? PSuccess t1))
     (is (instance? PError t2))))
+
+(deftest many-test
+  (let [s "AAAAB"
+        t1 (run-p (many (pchar \A)) s)
+        t2 (run-p (many (pchar \B)) s)
+        t3 (run-p (many (pstring "AA")) s)]
+    (is (instance? PSuccess t1))
+    (is (not= [] (:res t1)))
+    (is (instance? PSuccess t2))
+    (is (= [] (:res t2)))
+    (is (instance? PSuccess t3))
+    (is (not= [] (:res t3)))))

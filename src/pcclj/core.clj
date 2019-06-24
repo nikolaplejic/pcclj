@@ -114,3 +114,18 @@
   "Turns a string into a parser for that string."
   [^String str]
   (as-str-p (sequence-p (map pchar (seq str)))))
+
+(defn zero-or-more
+  [parser input]
+  (let [result (run-p parser input)]
+    (condp instance? result
+      PError   [[] input]
+      PSuccess (let [inner-result (zero-or-more parser (:rst result))]
+                 [(concat (:res result) (first inner-result)) (second inner-result)]))))
+
+(defn many
+  [parser]
+  (Parser.
+   (fn [input]
+     (let [result (zero-or-more parser input)]
+       (PSuccess. (first result) (second result))))))
