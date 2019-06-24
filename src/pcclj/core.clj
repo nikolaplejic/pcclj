@@ -1,6 +1,4 @@
-(ns pcclj.core
-  (:require [clojure.spec.alpha :as s]
-            [clojure.core.match :as m]))
+(ns pcclj.core)
 
 (defrecord Parser   [pfn])
 (defrecord PSuccess [res rst])
@@ -9,9 +7,9 @@
 (defn pchar*
   "Parses a single character in an input string."
   [chr input]
-  (m/match (first input)
-           chr   (PSuccess. (conj '() (subs input 0 1)) (subs input 1))
-           :else (PError.   (str "Expecting " chr ", found " (first input)))))
+  (if (= chr (first input))
+    (PSuccess. (conj '() (subs input 0 1)) (subs input 1))
+    (PError.   (str "Expecting " chr ", found " (first input)))))
 
 ;; ---
 
