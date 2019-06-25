@@ -127,3 +127,21 @@
    (fn [input]
      (let [result (zero-or-more parser input)]
        (PSuccess. (first result) (second result))))))
+
+(defn many1
+  [parser]
+  (Parser.
+   (fn [input]
+     (let [first-result (run-p parser input)]
+       (condp instance? first-result
+         PError   first-result
+         PSuccess (let [second-result (zero-or-more parser (.rst first-result))
+                        values (concat (.res first-result) (first second-result))]
+                    (PSuccess. values (second second-result))))))))
+
+(def digit (any-of (clojure.string/join (range 0 10))))
+(def digits (many1 digit))
+
+(def pint
+  (let [to-int (comp (fn [s] (Integer/parseInt s)) clojure.string/join)]
+    (map-p to-int digits)))

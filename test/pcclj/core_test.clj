@@ -114,3 +114,21 @@
     (is (= [] (:res t2)))
     (is (instance? PSuccess t3))
     (is (not= [] (:res t3)))))
+
+(deftest many1-test
+  (let [s "AAAAAB"
+        t1 (run-p (many1 (pchar \A)) s)
+        t2 (run-p (many1 (pchar \B)) s)
+        t3 (run-p (many1 (pstring "AA")) s)]
+    (is (instance? PSuccess t1))
+    (is (instance? PError t2))
+    (is (instance? PSuccess t3))))
+
+(deftest pint-test
+  (let [s1 "123ABC"
+        s2 "ABC123"
+        t1 (run-p pint s1)
+        t2 (run-p pint s2)]
+    (is (instance? PSuccess t1))
+    (is (= 123 (:res t1)))
+    (is (instance? PError t2))))
