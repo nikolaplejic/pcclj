@@ -176,3 +176,7 @@
   [p1 p2]
   (let [select-fn (fn [[l r]] r)]
     (map-p select-fn (and-then p1 p2))))
+
+(defn between
+  [p1 p2 p3]
+  (right-p p1 (left-p p2 p3)))

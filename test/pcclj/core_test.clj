@@ -149,3 +149,13 @@
     (is (= '("1") (:res t2)))
     (is (instance? PSuccess t3))
     (is (= (PSome. '(";")) (:res t3)))))
+
+(deftest between-test
+  (let [s1 "<hello>"
+        s2 "<123>"
+        parser (between (pchar \<) (pstring "hello") (pchar \>))
+        t1 (run-p parser s1)
+        t2 (run-p parser s2)]
+    (is (= (instance? PSuccess t1)))
+    (is (= "hello" (:res t1)))
+    (is (= (instance? PError t2)))))
