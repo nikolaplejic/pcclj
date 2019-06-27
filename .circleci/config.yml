@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/pcclj
+    docker:
+      - image: circleci/clojure:lein-2.9.1
+    environment:
+      LEIN_ROOT: nbd
+      JVM_OPTS: -Xmx3200m
+    steps:
+      - checkout
+      - restore_cache:
+          key: pcclj-{{ checksum "project.clj" }}
+      - run: lein deps
+      - save_cache: # generate and store cache in the .m2 directory using a key template
+          paths:
+            - ~/.m2
+          key: pcclj-{{ checksum "project.clj" }}
+      - run: lein test
