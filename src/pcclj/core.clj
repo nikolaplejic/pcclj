@@ -162,3 +162,17 @@
                      nr
                      (* -1 nr))))]
     (map-p to-int (and-then (opt (pchar \-)) digits))))
+
+;; ---
+
+(defn left-p
+  "Executes two parsers, and keeps only the result of the first one."
+  [p1 p2]
+  (let [select-fn (fn [[l r]] l)]
+    (map-p select-fn (and-then p1 p2))))
+
+(defn right-p
+  "Executes two parsers, and keeps only the result of the second one."
+  [p1 p2]
+  (let [select-fn (fn [[l r]] r)]
+    (map-p select-fn (and-then p1 p2))))

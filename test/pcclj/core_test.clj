@@ -1,7 +1,7 @@
 (ns pcclj.core-test
   (:require [clojure.test :refer :all]
             [pcclj.core :refer :all])
-  (:import [pcclj.core PSuccess PError]))
+  (:import [pcclj.core PSuccess PError PSome PNone]))
 
 (deftest pchar-star-test
   (let [p (pchar* \a "asd")]
@@ -136,3 +136,16 @@
     (is (instance? PError t2))
     (is (instance? PSuccess t3))
     (is (= -123 (:res t3)))))
+
+(deftest left-p-right-p-test
+  (let [s1 "1;"
+        s2 "1"
+        t1 (run-p (left-p digit (opt (pchar \;))) s1)
+        t2 (run-p (left-p digit (opt (pchar \;))) s2)
+        t3 (run-p (right-p digit (opt (pchar \;))) s1)]
+    (is (instance? PSuccess t1))
+    (is (= '("1") (:res t1)))
+    (is (instance? PSuccess t2))
+    (is (= '("1") (:res t2)))
+    (is (instance? PSuccess t3))
+    (is (= (PSome. '(";")) (:res t3)))))
