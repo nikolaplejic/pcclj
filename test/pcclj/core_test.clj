@@ -127,8 +127,12 @@
 (deftest pint-test
   (let [s1 "123ABC"
         s2 "ABC123"
+        s3 "-123c"
         t1 (run-p pint s1)
-        t2 (run-p pint s2)]
+        t2 (run-p pint s2)
+        t3 (run-p pint s3)]
     (is (instance? PSuccess t1))
     (is (= 123 (:res t1)))
-    (is (instance? PError t2))))
+    (is (instance? PError t2))
+    (is (instance? PSuccess t3))
+    (is (= -123 (:res t3)))))

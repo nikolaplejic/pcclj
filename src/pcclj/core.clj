@@ -142,6 +142,23 @@
 (def digit (any-of (clojure.string/join (range 0 10))))
 (def digits (many1 digit))
 
+;; ---
+
+(defrecord PSome [val])
+(defrecord PNone [])
+
+(defn opt
+  [p]
+  (let [result (map-p (fn [x] (PSome. x)) p)
+        none   (return-p (PNone.))]
+    (or-else result none)))
+
+;; ---
+
 (def pint
-  (let [to-int (comp (fn [s] (Integer/parseInt s)) clojure.string/join)]
-    (map-p to-int digits)))
+  (let [to-int (fn [[sign nr]]
+                 (let [nr (Integer/parseInt (clojure.string/join nr))]
+                   (if (instance? PNone sign)
+                     nr
+                     (* -1 nr))))]
+    (map-p to-int (and-then (opt (pchar \-)) digits))))
