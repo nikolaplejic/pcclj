@@ -180,3 +180,19 @@
 (defn between
   [p1 p2 p3]
   (right-p p1 (left-p p2 p3)))
+
+(defn bind-p
+  "Combines a parser-producing function and a parser."
+  [f p]
+  (Parser.
+   (fn [input]
+     (let [r1 (run-p p input)]
+       (condp instance? r1
+         PError   r1
+         PSuccess (let [p2 (f (:res r1))]
+                    (run-p p2 (:rst r1))))))))
+
+(defn map-p2
+  "An alternative implementation of `map-p`."
+  [f p]
+  (bind-p (fn [input] (return-p (f input))) p))
